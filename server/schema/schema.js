@@ -1,5 +1,9 @@
 const { products, users } = require("../sampleData");
 
+// Mongoose models
+const Product = require("../models/Product");
+const User = require("../models/User");
+
 // const graphql = require('graphql');
 const {
   GraphQLObjectType,
@@ -22,6 +26,13 @@ const ProductType = new GraphQLObjectType({
     buyPrice: { type: GraphQLString },
     sellPrice: { type: GraphQLString },
     img: { type: GraphQLString },
+    // user: {
+    //   type: UserType,
+    //   resolve(parent, args) {
+    //     return users.find(user => user.id === parent.userId)
+    //     return Clients.findById(parent.userId)
+    //   }
+    // }
   }),
 });
 
@@ -43,27 +54,31 @@ const RootQuery = new GraphQLObjectType({
     products: {
       type: new GraphQLList(ProductType),
       resolve() {
-        return products;
+        // return products;
+        return Product.find();
       },
     },
     product: {
       type: ProductType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return products.find((product) => product.id == args.id);
+        // return products.find((product) => product.id == args.id);
+        return Product.findById(args.id);
       },
     },
     clients: {
       type: new GraphQLList(UserType),
       resolve(parent, args) {
-        return users;
+        // return users;
+        return User.find();
       },
     },
     client: {
       type: UserType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return users.find((user) => user.id == args.id);
+        // return users.find((user) => user.id == args.id);
+        return User.findById(args.id);
       },
     },
   },
