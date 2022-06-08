@@ -12,6 +12,8 @@ const {
   GraphQLString,
   GraphQLList,
   GraphQLFloat,
+  GraphQLNonNull,
+  GraphQLEnumType,
 } = require("graphql");
 
 const ProductType = new GraphQLObjectType({
@@ -84,6 +86,83 @@ const RootQuery = new GraphQLObjectType({
   },
 });
 
+// mutations
+const mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    addUser: {
+      type: UserType,
+      args: {
+        name: { type: GraphQLNonNull(GraphQLString) }, // REQUIRED
+        lastName: { type: GraphQLNonNull(GraphQLString) }, // REQUIRED
+        role: {
+          type: GraphQLNonNull(
+            new GraphQLEnumType({
+              name: "userRole",
+              values: {
+                admin: { value: "Admin" },
+                regular: { value: "Regular" },
+              },
+            })
+          ),
+          defaultValue: "Admin",
+        }, // REQUIRED
+        phone: { type: GraphQLNonNull(GraphQLString) }, // REQUIRED
+        email: { type: GraphQLNonNull(GraphQLString) }, // REQUIRED
+        // userId: { type: GraphQLNonNull(GraphQLID)}
+      },
+      resolve(parent, args) {
+        const user = new User({
+          name: args.name,
+          lastName: args.lastName,
+          role: args.role,
+          phone: args.phone,
+          email: args.email,
+        });
+
+        // User.create(user)
+        return user.save();
+      },
+    },
+    deleteUser: {
+      type: UserType,
+      args: {
+        id: { type: GraphQLNonNull(GraphQLID) },
+      },
+      resolve(parent, args) {
+        return User.findByIdAndRemove(args.id);
+      },
+    },
+    addProduct: {
+      type: ProductType,
+      args: {
+        name: { type: GraphQLNonNull(GraphQLString) },
+        brand: { type: GraphQLString },
+        tag: { type: GraphQLList(GraphQLString) },
+        quantity: { type: GraphQLFloat },
+        unit: { type: GraphQLString },
+        buyPrice: { type: GraphQLFloat },
+        sellPrice: { type: GraphQLFloat },
+        img: { type: GraphQLString },
+      },
+      resolve(parent, args) {
+        const product = new Product({
+          name: args.name,
+          brand: args.brand,
+          tag: args.tag,
+          quantity: args.quantity,
+          unit: args.unit,
+          buyPrice: args.buyPrice,
+          sellPrice: args.sellPrice,
+          img: args.img,
+        });
+        return product.save();
+      },
+    },
+  },
+});
+
 module.exports = new GraphQLSchema({
   query: RootQuery,
+  mutation,
 });
